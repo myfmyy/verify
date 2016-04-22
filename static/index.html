@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="/css/reset.css" rel="stylesheet" />
+    <script src="/js/jquery-2.1.4.min.js"></script>
+    <style>
+        body {
+            background-color: #F0F0F0;
+        }
+
+        .warp {
+            width: 10rem;
+            margin: 0 auto;
+        }
+
+        .imgVerify {
+            position: absolute;
+            width: 9rem;
+            padding: 0.5rem;
+            margin: 0.5rem;
+            background: rgba(213, 223, 224, 0.77);
+            text-align: center;
+        }
+
+        h3 {
+            font-size: 0.4rem;
+            text-align: center;
+        }
+
+        .img_box {
+            width: 6rem;
+            height: 6rem;
+            position: relative;
+            margin: 0 auto;
+        }
+
+            .img_box div {
+                text-align: left;
+                width: 2rem;
+                height: 2rem;
+                position: absolute;
+                background-size: 6rem 6rem;
+                transition: all 1s;
+                -webkit-transition: all 1s;
+            }
+
+            .img_box .on:before {
+                content: " ";
+                position: absolute;
+                border: 0.2rem solid transparent;
+                margin-top: 0.8rem;
+                border-left-color: dodgerblue;
+            }
+
+        .tag0 {
+            left: 0rem;
+            top: 0rem;
+        }
+
+        .tag1 {
+            left: 2rem;
+            top: 0rem;
+        }
+
+        .tag2 {
+            left: 4rem;
+            top: 0rem;
+        }
+
+        .tag3 {
+            left: 0rem;
+            top: 2rem;
+        }
+
+        .tag4 {
+            left: 2rem;
+            top: 2rem;
+        }
+
+        .tag5 {
+            left: 4rem;
+            top: 2rem;
+        }
+
+        .tag6 {
+            left: 0rem;
+            top: 4rem;
+        }
+
+        .tag7 {
+            left: 2rem;
+            top: 4rem;
+        }
+
+        .tag8 {
+            left: 4rem;
+            top: 4rem;
+        }
+
+        .imgVerify_btn {
+            border: 1px solid #189BDA;
+            border-radius: 0.1rem;
+            background: #189BDA;
+            width: 6rem;
+            margin-top: 0.1rem;
+            font-size: 0.4rem;
+        }
+    </style>
+    <script>
+        (function () {
+            function setRem() {
+                var iRem = $(window).width() / 10;
+                iRem = iRem > 64 ? 64 : iRem;
+                iRem = iRem < 30 ? 30 : iRem;
+                $("html").css("font-size", iRem + "px");
+            }
+            setRem();
+            $(window).resize(setRem);
+        })();
+        $(function () {
+            reVerify();
+            $(".imgVerify_btn").click(function () {
+                var sArray = "";
+                $(".img_box div").each(function () {
+                    sArray += "-" + $(this).attr("tag");
+                });
+                var e = this;
+                $.ajax({
+                    type: "post",
+                    url: "/verifyImg",
+                    data: "sort=" + sArray,
+                    async: false,
+                    success: function (data) {
+                        if (data == 1) {
+                            alert("正确");
+                        } else if (data == 0) {
+                            alert("错误");
+                        } else if (data == 3) {
+                            alert("错误");
+                            reVerify();
+                        }
+                    }
+                });
+            });
+        });
+        var imgDoms = [];
+        var imgLength = 2;
+        function reVerify() {
+            $(".img_box div").remove();
+            imgDoms = [];
+            var itime = new Date().getTime();
+            for (var i = 0; i < 9; i++) {
+                imgDoms[i] = document.createElement("div");
+                $(".img_box").append(imgDoms[i]);
+                $(imgDoms[i]).attr("tag", i).css({ "background-position": -i % 3 * imgLength + "rem " + -parseInt(i / 3) * imgLength + "rem" }).addClass("tag" + i);
+
+            }
+            $(".img_box div").css("background-image", "url(/getVerifyImg?" + itime + ")");
+            $(".img_box div").click(function () {
+                $(this).toggleClass("on");
+                if ($(".img_box .on").length == 2) {
+                    var tag1 = $(".img_box .on").eq(0).attr("tag");
+                    var tag2 = $(".img_box .on").eq(1).attr("tag");
+                    var dom1 = $(".img_box .on").eq(0);
+                    var dom2 = $(".img_box .on").eq(1);
+                    dom1.attr("class", "tag" + tag2).attr("tag", tag2);
+                    dom2.attr("class", "tag" + tag1).attr("tag", tag1);
+                }
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <div class="warp" id="warp">
+        <div class="imgVerify" v-if="imgVerify_show">
+            <h3>选择错误的区域</h3>
+            <div class="img_box"></div>
+            <input value="确定" type="button" v-on:click="verifyImg" class="imgVerify_btn" />
+        </div>
+    </div>
+</body>
+</html>
